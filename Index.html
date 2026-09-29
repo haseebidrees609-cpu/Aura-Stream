@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraStream - Ultimate Streaming Aggregator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0f19',
+                        cardBg: '#131c2e',
+                        accentRed: '#e50914',
+                        accentRedHover: '#f40612'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col selection:bg-accentRed selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="setCategoryFilter('all')">
+                <div class="bg-accentRed text-white p-2 rounded-xl shadow-lg shadow-accentRed/30 flex items-center justify-center font-black text-xl tracking-wider">AS</div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-wide text-white">AuraStream</span>
+                    <span class="hidden sm:block text-[10px] text-accentRed font-semibold tracking-widest uppercase">Live Engine v2.5</span>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-md relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search movies, anime, dramas..." class="w-full bg-slate-900/80 border border-slate-800 text-sm rounded-full pl-10 pr-4 py-2 focus:outline-none focus:border-accentRed text-slate-200">
+            </div>
+
+            <button onclick="openAdminModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 border border-slate-700/50">
+                <i class="fa-solid fa-sliders text-accentRed"></i>
+                <span class="hidden md:inline">Admin</span>
+            </button>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 overflow-x-auto hide-scrollbar py-2 border-t border-slate-800/60">
+            <button onclick="setCategoryFilter('all')" id="cat-all" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-accentRed text-white shadow-md">All Catalog</button>
+            <button onclick="setCategoryFilter('movie')" id="cat-movie" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700">Movies</button>
+            <button onclick="setCategoryFilter('tv')" id="cat-tv" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700">TV Shows & Dramas</button>
+            <button onclick="setCategoryFilter('anime')" id="cat-anime" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700">Anime</button>
+            <button onclick="setCategoryFilter('cartoon')" id="cat-cartoon" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700">Cartoons</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-accentRed"></i> Streaming Catalog
+                </h2>
+                <p class="text-xs text-slate-400">Click any title to launch multi-resolver stream</p>
+            </div>
+            <div class="text-xs text-slate-400 font-medium bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                Total Titles: <span id="catalogCount" class="text-white font-bold">0</span>
+            </div>
+        </div>
+
+        <div id="mediaGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"></div>
+
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
+            <div class="bg-slate-900 p-5 rounded-full border border-slate-800 text-slate-500 text-3xl mb-4"><i class="fa-solid fa-film"></i></div>
+            <h3 class="text-base font-bold text-slate-300">No media found</h3>
+            <p class="text-xs text-slate-500 max-w-sm mt-1">Open the Admin Panel and run **Bulk TMDB Sync**.</p>
+            <button onclick="openAdminModal()" class="mt-4 bg-accentRed text-white px-4 py-2 rounded-lg text-xs font-semibold">Open Admin Panel</button>
+        </div>
+    </main>
+
+    <!-- Video Stream Modal Player -->
+    <div id="playerModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex flex-col items-center justify-center p-2 sm:p-6">
+        <div class="w-full max-w-5xl bg-cardBg border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-4 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+                <h3 id="modalTitle" class="text-sm sm:text-base font-bold text-white truncate">Loading stream...</h3>
+                <button onclick="closePlayerModal()" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="relative w-full aspect-video bg-black flex items-center justify-center">
+                <iframe id="streamFrame" src="" class="w-full h-full border-0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+            </div>
+            <div class="p-4 bg-slate-900/80 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p id="modalOverview" class="text-xs text-slate-400 line-clamp-2 max-w-xl"></p>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[11px] text-slate-400">Servers:</span>
+                    <button onclick="switchStreamSource('vidsrc')" id="btn-vidsrc" class="bg-accentRed text-white px-3 py-1.5 rounded text-xs font-semibold">VidSrc</button>
+                    <button onclick="switchStreamSource('multiembed')" id="btn-multiembed" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs font-semibold">MultiEmbed</button>
+                    <button onclick="switchStreamSource('vidsrc-cc')" id="btn-vidsrc-cc" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs font-semibold">VidSrc.cc</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-lg bg-cardBg border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+                <h3 class="text-base font-bold text-white"><i class="fa-solid fa-gear text-accentRed"></i> Admin & Cache Control</h3>
+                <button onclick="closeAdminModal()" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-5 overflow-y-auto max-h-[80vh]">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">TMDB v3 API Key</label>
+                    <div class="flex gap-2">
+                        <input type="password" id="adminApiKey" placeholder="Enter TMDB API Key..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+                        <button onclick="saveAdminApiKey()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-semibold border border-slate-700">Save</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2">Bulk Catalog Harvest Engine</h4>
+                    <select id="syncPagesSelect" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-lg p-2 text-slate-200 mb-3">
+                        <option value="10">10 Pages (200 titles)</option>
+                        <option value="25">25 Pages (500 titles)</option>
+                        <option value="50" selected>50 Pages (1,000 titles)</option>
+                    </select>
+                    <button onclick="runBulkSync()" id="syncButton" class="w-full bg-accentRed text-white py-2.5 rounded-xl text-xs font-bold shadow-lg">Start Bulk Harvest</button>
+                    <div id="syncProgressContainer" class="hidden mt-4 space-y-1">
+                        <div class="flex justify-between text-[11px] text-slate-400">
+                            <span id="syncStatusText">Harvesting...</span>
+                            <span id="syncCountText">0 items</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                            <div id="syncProgressBar" class="bg-accentRed h-2" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800">
+                    <button onclick="hardResetCache()" class="w-full bg-amber-600/20 text-amber-500 border border-amber-600/30 hover:bg-amber-600/30 py-2 rounded-xl text-xs font-bold transition-colors">
+                        <i class="fa-solid fa-rotate"></i> Force Clear Mobile Browser Cache & Reload
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        let catalog = JSON.parse(localStorage.getItem('aurastream_catalog') || '[]');
+        let currentFilter = 'all';
+        let searchQuery = '';
+        let activeItem = null;
+        let activeSource = 'vidsrc';
+
+        const defaultItems = [
+            { id: 93405, title: "Squid Game", overview: "Players accept a strange invitation...", poster: "https://image.tmdb.org/t/p/w500/dDlEmu3EZ0Pgg93K2SVNLCjCSv1.jpg", releaseDate: "2021-09-17", mediaType: "tv" },
+            { id: 1396, title: "Breaking Bad", overview: "Chemistry teacher turns to methamphetamine...", poster: "https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg", releaseDate: "2008-01-20", mediaType: "tv" },
+            { id: 37854, title: "One Piece", overview: "Adventures of Monkey D. Luffy...", poster: "https://image.tmdb.org/t/p/w500/fcXdISns8W90IBTbqz1kDeJNhRF.jpg", releaseDate: "1999-10-20", mediaType: "anime" },
+            { id: 155, title: "The Dark Knight", overview: "Batman faces the Joker in Gotham...", poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg", releaseDate: "2008-07-18", mediaType: "movie" }
+        ];
+
+        if (catalog.length === 0) {
+            catalog = defaultItems;
+            localStorage.setItem('aurastream_catalog', JSON.stringify(catalog));
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('adminApiKey').value = localStorage.getItem('tmdb_api_key') || '';
+            renderCatalog();
+        });
+
+        function renderCatalog() {
+            const grid = document.getElementById('mediaGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            let filtered = catalog.filter(item => {
+                const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+                if (!matchesSearch) return false;
+                if (currentFilter === 'all') return true;
+                if (currentFilter === 'movie') return item.mediaType === 'movie';
+                if (currentFilter === 'tv') return item.mediaType === 'tv' || item.mediaType === 'drama';
+                if (currentFilter === 'anime') return item.mediaType === 'anime';
+                if (currentFilter === 'cartoon') return item.mediaType === 'cartoon';
+                return true;
+            });
+
+            document.getElementById('catalogCount').innerText = filtered.length;
+            emptyState.classList.toggle('hidden', filtered.length > 0);
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-cardBg border border-slate-800 rounded-2xl overflow-hidden shadow-lg hover:border-accentRed transition-all flex flex-col group cursor-pointer';
+                card.onclick = () => openPlayerModal(item);
+
+                card.innerHTML = `
+                    <div class="relative aspect-[2/3] overflow-hidden bg-slate-900">
+                        <img src="${item.poster || 'https://via.placeholder.com/500x750'}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy">
+                        <div class="absolute top-2 left-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">${item.mediaType}</div>
+                    </div>
+                    <div class="p-3 flex flex-col flex-1 justify-between">
+                        <h3 class="text-xs font-bold text-slate-100 truncate group-hover:text-accentRed">${item.title}</h3>
+                        <span class="text-[10px] text-accentRed font-semibold mt-2">HD Stream</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function setCategoryFilter(category) {
+            currentFilter = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.className = 'category-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-slate-800/80 text-slate-300 border border-slate-700';
+            });
+            document.getElementById(`cat-${category}`).className = 'category-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-accentRed text-white shadow-md';
+            renderCatalog();
+        }
+
+        function handleSearch(q) { searchQuery = q; renderCatalog(); }
+
+        function openPlayerModal(item) {
+            activeItem = item;
+            document.getElementById('modalTitle').innerText = item.title;
+            document.getElementById('modalOverview').innerText = item.overview || '';
+            loadStreamSource('vidsrc', item);
+            document.getElementById('playerModal').classList.remove('hidden');
+        }
+
+        function closePlayerModal() {
+            document.getElementById('playerModal').classList.add('hidden');
+            document.getElementById('streamFrame').src = '';
+        }
+
+        function switchStreamSource(type) {
+            activeSource = type;
+            if (activeItem) loadStreamSource(type, activeItem);
+        }
+
+        function loadStreamSource(type, item) {
+            const frame = document.getElementById('streamFrame');
+            ['vidsrc', 'multiembed', 'vidsrc-cc'].forEach(s => {
+                document.getElementById(`btn-${s}`).className = s === type ? 'bg-accentRed text-white px-3 py-1.5 rounded text-xs font-semibold' : 'bg-slate-800 text-slate-300 px-3 py-1.5 rounded text-xs font-semibold';
+            });
+            const isTv = item.mediaType !== 'movie';
+            if (type === 'vidsrc') frame.src = isTv ? `https://vidsrc.me/embed/tv?tmdb=${item.id}&season=1&episode=1` : `https://vidsrc.me/embed/movie?tmdb=${item.id}`;
+            else if (type === 'multiembed') frame.src = `https://multiembed.mov/?video_id=${item.id}&tmdb=1`;
+            else if (type === 'vidsrc-cc') frame.src = isTv ? `https://vidsrc.cc/v2/embed/tv/${item.id}/1/1` : `https://vidsrc.cc/v2/embed/movie/${item.id}`;
+        }
+
+        function openAdminModal() { document.getElementById('adminModal').classList.remove('hidden'); }
+        function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
+        function saveAdminApiKey() {
+            localStorage.setItem('tmdb_api_key', document.getElementById('adminApiKey').value.trim());
+            alert('API Key Saved!');
+        }
+
+        function hardResetCache() {
+            localStorage.clear();
+            alert('Cache cleared successfully! Reloading page.');
+            window.location.reload(true);
+        }
+
+        async function runBulkSync() {
+            const apiKey = document.getElementById('adminApiKey').value.trim() || localStorage.getItem('tmdb_api_key');
+            if (!apiKey) { alert('Enter and save TMDB API Key first!'); return; }
+
+            const maxPages = parseInt(document.getElementById('syncPagesSelect').value) || 50;
+            const progressContainer = document.getElementById('syncProgressContainer');
+            const progressBar = document.getElementById('syncProgressBar');
+            const statusText = document.getElementById('syncStatusText');
+            const countText = document.getElementById('syncCountText');
+            const syncButton = document.getElementById('syncButton');
+
+            progressContainer.classList.remove('hidden');
+            syncButton.disabled = true;
+
+            let totalSyncedCount = 0;
+            const endpoints = [
+                { type: 'movie', url: 'https://api.themoviedb.org/3/discover/movie' },
+                { type: 'tv', url: 'https://api.themoviedb.org/3/discover/tv' }
+            ];
+
+            try {
+                for (let ep of endpoints) {
+                    const pagesPerEp = Math.ceil(maxPages / endpoints.length);
+                    for (let p = 1; p <= pagesPerEp; p++) {
+                        statusText.innerText = `Harvesting ${ep.type.toUpperCase()} (Page ${p}/${pagesPerEp})...`;
+                        progressBar.style.width = `${Math.round(((ep === endpoints[0] ? p : pagesPerEp + p) / maxPages) * 100)}%`;
+
+                        const res = await fetch(`${ep.url}?api_key=${apiKey}&page=${p}&sort_by=popularity.desc`);
+                        const data = await res.json();
+                        if (!data.results) continue;
+
+                        data.results.forEach(item => {
+                            let cat = ep.type;
+                            if (item.genre_ids && item.genre_ids.includes(16)) {
+                                cat = (item.title || item.name || '').toLowerCase().includes('anime') ? 'anime' : 'cartoon';
+                            } else if (cat === 'tv') cat = 'drama';
+
+                            const formatted = {
+                                id: item
