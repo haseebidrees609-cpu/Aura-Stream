@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolHub - Free Developer & Creator Utility Tools</title>
+    <meta name="description" content="Free online utility tools including JSON formatter, word counter, password generator, and Base64 encoder/decoder. Fast, secure, and easy to use.">
+    <meta name="keywords" content="JSON formatter, word counter, password generator, Base64 encoder, online developer tools">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b',
+                        accent: '#3b82f6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans selection:bg-accent selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-slate-800 bg-darkBg/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="bg-accent text-white p-2 rounded-xl font-bold text-xl tracking-wider shadow-lg shadow-accent/20">TH</div>
+                <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">ToolHub</span>
+            </div>
+            <span class="text-xs uppercase tracking-wider bg-slate-800 text-slate-400 px-2.5 py-1 rounded-full border border-slate-700">Ad-Supported Utilities</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
+        
+        <!-- Intro Banner -->
+        <div class="bg-gradient-to-r from-cardBg to-slate-800 border border-slate-700/60 rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="space-y-2 text-center md:text-left">
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">Professional Developer & Text Utilities</h1>
+                <p class="text-slate-400 text-sm sm:text-base max-w-xl">Fast, secure, client-side tools designed to streamline your daily workflow without uploading your data anywhere.</p>
+            </div>
+            <div class="bg-accent/10 border border-accent/30 text-accent px-4 py-3 rounded-xl text-xs font-semibold uppercase tracking-wider text-center">
+                100% Free & Secure
+            </div>
+        </div>
+
+        <!-- Tool Selection Nav / Tabs -->
+        <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
+            <button onclick="switchTool('json')" id="tab-json" class="tool-tab px-4 py-2.5 rounded-xl text-sm font-bold bg-accent text-white shadow-md shadow-accent/20 transition-all">JSON Formatter</button>
+            <button onclick="switchTool('word')" id="tab-word" class="tool-tab px-4 py-2.5 rounded-xl text-sm font-semibold bg-cardBg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">Word Counter</button>
+            <button onclick="switchTool('pass')" id="tab-pass" class="tool-tab px-4 py-2.5 rounded-xl text-sm font-semibold bg-cardBg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">Password Generator</button>
+            <button onclick="switchTool('base64')" id="tab-base64" class="tool-tab px-4 py-2.5 rounded-xl text-sm font-semibold bg-cardBg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">Base64 Encoder</button>
+        </div>
+
+        <!-- Tool Panels -->
+        <div class="grid grid-cols-1 gap-6">
+
+            <!-- 1. JSON Formatter Panel -->
+            <div id="panel-json" class="tool-panel space-y-4">
+                <div class="bg-cardBg border border-slate-700/60 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">🛠️ JSON Formatter & Validator</h2>
+                        <div class="flex gap-2">
+                            <button onclick="formatJSON()" class="bg-accent hover:bg-blue-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition-all shadow">Format / Beautify</button>
+                            <button onclick="minifyJSON()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition-all">Minify</button>
+                            <button onclick="clearJSON()" class="bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-bold px-3 py-2 rounded-lg transition-all">Clear</button>
+                        </div>
+                    </div>
+                    <textarea id="json-input" placeholder="Paste your raw JSON code here..." class="w-full h-64 bg-slate-900 border border-slate-700 rounded-xl p-4 text-slate-200 font-mono text-sm focus:outline-none focus:border-accent transition-all resize-y"></textarea>
+                    <div id="json-status" class="text-xs font-medium px-3 py-2 rounded-lg hidden"></div>
+                </div>
+            </div>
+
+            <!-- 2. Word Counter Panel -->
+            <div id="panel-word" class="tool-panel space-y-4 hidden">
+                <div class="bg-cardBg border border-slate-700/60 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">📝 Word & Character Counter</h2>
+                        <button onclick="clearWord()" class="bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-bold px-3 py-2 rounded-lg transition-all">Clear</button>
+                    </div>
+                    <textarea id="word-input" oninput="updateWordStats()" placeholder="Type or paste your text here to check word count, characters, and reading time..." class="w-full h-48 bg-slate-900 border border-slate-700 rounded-xl p-4 text-slate-200 text-sm focus:outline-none focus:border-accent transition-all resize-y"></textarea>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-center">
+                            <div class="text-2xl font-black text-accent" id="stat-words">0</div>
+                            <div class="text-xs text-slate-400 uppercase tracking-wider mt-1">Words</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-center">
+                            <div class="text-2xl font-black text-white" id="stat-chars">0</div>
+                            <div class="text-xs text-slate-400 uppercase tracking-wider mt-1">Characters</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-center">
+                            <div class="text-2xl font-black text-white" id="stat-sentences">0</div>
+                            <div class="text-xs text-slate-400 uppercase tracking-wider mt-1">Sentences</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-center">
+                            <div class="text-2xl font-black text-white" id="stat-reading">0s</div>
+                            <div class="text-xs text-slate-400 uppercase tracking-wider mt-1">Read Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Password Generator Panel -->
+            <div id="panel-pass" class="tool-panel space-y-4 hidden">
+                <div class="bg-cardBg border border-slate-700/60 rounded-2xl p-5 shadow-xl flex flex-col gap-6">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">🔐 Secure Password Generator</h2>
+                    
+                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 p-2 rounded-xl">
+                        <input type="text" id="pass-output" readonly class="bg-transparent w-full px-3 text-slate-200 font-mono text-base focus:outline-none">
+                        <button onclick="copyPassword()" class="bg-accent hover:bg-blue-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all shrink-0">Copy</button>
+                    </div>
+
+                    <div class="space-y-4 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                        <div class="flex justify-between items-center">
+                            <label class="text-sm font-semibold text-slate-300">Password Length: <span id="length-val" class="text-accent font-bold">16</span></label>
+                            <input type="range" id="pass-length" min="6" max="32" value="16" oninput="document.getElementById('length-val').innerText = this.value; generatePassword();" class="accent-accent cursor-pointer w-1/2">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+                            <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="opt-upper" checked onchange="generatePassword()" class="rounded border-slate-700 bg-slate-900 text-accent focus:ring-0"> Uppercase Letters (A-Z)
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="opt-lower" checked onchange="generatePassword()" class="rounded border-slate-700 bg-slate-900 text-accent focus:ring-0"> Lowercase Letters (a-z)
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="opt-nums" checked onchange="generatePassword()" class="rounded border-slate-700 bg-slate-900 text-accent focus:ring-0"> Numbers (0-9)
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                                <input type="checkbox" id="opt-syms" checked onchange="generatePassword()" class="rounded border-slate-700 bg-slate-900 text-accent focus:ring-0"> Symbols (!@#$%)
+                            </label>
+                        </div>
+                    </div>
+                    <button onclick="generatePassword()" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold py-3 rounded-xl transition-all border border-slate-700">Generate New Password</button>
+                </div>
+            </div>
+
+            <!-- 4. Base64 Encoder / Decoder Panel -->
+            <div id="panel-base64" class="tool-panel space-y-4 hidden">
+                <div class="bg-cardBg border border-slate-700/60 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">🔤 Base64 Encoder & Decoder</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Input Text</label>
+                            <textarea id="base64-input" placeholder="Enter text to encode or decode..." class="w-full h-40 bg-slate-900 border border-slate-700 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-accent transition-all resize-y"></textarea>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Result Output</label>
+                            <textarea id="base64-output" readonly placeholder="Output will appear here..." class="w-full h-40 bg-slate-900 border border-slate-700 rounded-xl p-3 text-slate-200 text-sm focus:outline-none font-mono resize-y"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        <button onclick="encodeBase64()" class="bg-accent hover:bg-blue-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all shadow">Encode to Base64</button>
+                        <button onclick="decodeBase64()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all">Decode from Base64</button>
+                        <button onclick="clearBase64()" class="bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-bold px-3 py-2.5 rounded-lg transition-all ml-auto">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer / Ad Space Placeholder -->
+    <footer class="border-t border-slate-800 bg-darkBg mt-auto py-6">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div>© 2026 ToolHub. All rights reserved.</div>
+            <div class="flex gap-4">
+                <span class="hover:text-slate-400 transition-colors cursor-pointer">Privacy Policy</span>
+                <span class="hover:text-slate-400 transition-colors cursor-pointer">Terms of Service</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Tab Switcher
+        function switchTool(toolId) {
+            document.querySelectorAll('.tool-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tool-tab').forEach(t => {
+                t.classList.remove('bg-accent', 'text-white', 'shadow-md', 'shadow-accent/20');
+                t.classList.add('bg-cardBg', 'text-slate-400');
+            });
+            document.getElementById('panel-' + toolId).classList.remove('hidden');
+            const activeTab = document.getElementById('tab-' + toolId);
+            activeTab.classList.remove('bg-cardBg', 'text-slate-400');
+            activeTab.classList.add('bg-accent', 'text-white', 'shadow-md', 'shadow-accent/20');
+        }
+
+        // JSON Logic
+        function formatJSON() {
+            const input = document.getElementById('json-input').value;
+            const status = document.getElementById('json-status');
+            if (!input.trim()) return;
+            try {
+                const parsed = JSON.parse(input);
+                document.getElementById('json-input').value = JSON.stringify(parsed, null, 4);
+                status.innerText = "✓ Valid JSON Formatted Successfully";
+                status.className = "text-xs font-medium px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 block";
+            } catch (e) {
+                status.innerText = "✗ Invalid JSON: " + e.message;
+                status.className = "text-xs font-medium px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 block";
+            }
+        }
+        function minifyJSON() {
+            const input = document.getElementById('json-input').value;
+            const status = document.getElementById('json-status');
+            if (!input.trim()) return;
+            try {
+                const parsed = JSON.parse(input);
+                document.getElementById('json-input').value = JSON.stringify(parsed);
+                status.innerText = "✓ JSON Minified Successfully";
+                status.className = "text-xs font-medium px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 block";
+            } catch (e) {
+                status.innerText = "✗ Invalid JSON: " + e.message;
+                status.className = "text-xs font-medium px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 block";
+            }
+        }
+        function clearJSON() {
+            document.getElementById('json-input').value = '';
+            document.getElementById('json-status').classList.add('hidden');
+        }
+
+        // Word Counter Logic
+        function updateWordStats() {
+            const text = document.getElementById('word-input').value;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const chars = text.length;
+            const sentences = text.split(/[.!?]+/).filter(Boolean).length;
+            const readTime = Math.ceil(words / 200 * 60);
+
+            document.getElementById('stat-words').innerText = words;
+            document.getElementById('stat-chars').innerText = chars;
+            document.getElementById('stat-sentences').innerText = sentences;
+            document.getElementById('stat-reading').innerText = readTime < 60 ? readTime + 's' : Math.ceil(readTime / 60) + 'm';
+        }
+        function clearWord() {
+            document.getElementById('word-input').value = '';
+            updateWordStats();
+        }
+
+        // Password Generator Logic
+        function generatePassword() {
+            const length = document.getElementById('pass-length').value;
+            const upper = document.getElementById('opt-upper').checked;
+            const lower = document.getElementById('opt-lower').checked;
+            const nums = document.getElementById('opt-nums').checked;
+            const syms = document.getElementById('opt-syms').checked;
+
+            let chars = '';
+            if (upper) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (lower) chars += 'abcdefghijklmnopqrstuvwxyz';
+            if (nums) chars += '0123456789';
+            if (syms) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+            if (!chars) {
+                document.getElementById('pass-output').value = 'Select at least one option!';
+                return;
+            }
+
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('pass-output').value = password;
+        }
+        function copyPassword() {
+            const passBox = document.getElementById('pass-output');
+            passBox.select();
+            navigator.clipboard.writeText(passBox.value);
+            alert('Password copied to clipboard!');
+        }
+        window.onload = generatePassword;
+
+        // Base64 Logic
+        function encodeBase64() {
+            const input = document.getElementById('base64-input').value;
+            try {
+                document.getElementById('base64-output').value = btoa(unescape(encodeURIComponent(input)));
+            } catch (e) {
+                document.getElementById('base64-output').value = 'Error encoding text.';
+            }
+        }
+        function decodeBase64() {
+            const input = document.getElementById('base64-input').value;
+            try {
+                document.getElementById('base64-output').value = decodeURIComponent(escape(atob(input)));
+            } catch (e) {
+                document.getElementById('base64-output').value = 'Invalid Base64 string.';
+            }
+        }
+        function clearBase64() {
+            document.getElementById('base64-input').value = '';
+            document.getElementById('base64-output').value = '';
+        }
+    </script>
+</body>
+                          </html>
+                          
